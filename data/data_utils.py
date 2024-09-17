@@ -19,6 +19,7 @@ def check_and_load_data(
     verbose: bool = True,
     log: bool = True,
     normalisation_mode: str = "standardise",
+    tolerance: float | None = 1e-20,
 ):
     """
     Check the specified dataset and load the data based on the mode (train or test).
@@ -65,9 +66,14 @@ def check_and_load_data(
                 )
 
         # Load data
-        train_data = np.asarray(f["train"])
-        test_data = np.asarray(f["test"])
-        val_data = np.asarray(f["val"])
+        train_data = np.asarray(f["train"], dtype=np.float32)
+        test_data = np.asarray(f["test"], dtype=np.float32)
+        val_data = np.asarray(f["val"], dtype=np.float32)
+
+        if tolerance is not None:
+            train_data = np.where(train_data < tolerance, tolerance, train_data)
+            test_data = np.where(test_data < tolerance, tolerance, test_data)
+            val_data = np.where(val_data < tolerance, tolerance, val_data)
 
         # Log transformation
         if log:
